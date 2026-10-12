@@ -6,6 +6,8 @@ DB_PATH = BASE_DIR / "football.duckdb"
 
 FIRST_SEASON = 2011 # A season is identified by the year it starts: 2011 means 2011-12.
 CURRENT_SEASON = 2026  # still in progress, so it is re-downloaded every run
+# When 2026-27 finishes, change CURRENT_SEASON to 2027. The old season then gets checked for 380 matches too.
+
 SEASONS = range(FIRST_SEASON, CURRENT_SEASON + 1)
 MATCHES_PER_SEASON = 380  # 20 teams x 19 opponents
 MATCHES_PER_TEAM = 38  # each team plays everyone twice

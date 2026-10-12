@@ -1,3 +1,7 @@
+"""
+Reports the performance of shot-based forecasts.
+"""
+
 from constants import MATCHES_PER_TEAM
 
 def report_forecast_scores(con):

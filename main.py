@@ -91,6 +91,41 @@ def build_matches(con):
     clean = con.sql("SELECT COUNT(*) FROM matches").fetchone()[0]
     print(f"Loaded {raw} raw rows, kept {clean} ({raw - clean} blank rows removed).")
 
+def check_season_sizes(con):
+    """Data quality check: every finished season should have exactly 380 matches.
+
+    Warns (but does not stop the pipeline) if a season has the wrong number of
+    matches, or if a season's file is missing entirely. The season still in
+    progress is skipped.
+    """
+    in_progress = season_label(CURRENT_SEASON)
+    counts = dict(con.sql("""
+        SELECT season, COUNT(*) AS matches
+        FROM matches
+        GROUP BY season
+    """).fetchall())
+
+    problems = []
+    for start in SEASONS:
+        label = season_label(start)
+        if label == in_progress:
+            continue
+        found = counts.get(label, 0)
+        if found == 0:
+            problems.append(f"{label}: no matches loaded (is the file missing?)")
+        elif found != MATCHES_PER_SEASON:
+            problems.append(
+                f"{label}: expected {MATCHES_PER_SEASON} matches, found {found}"
+            )
+
+    if problems:
+        print("DATA CHECK WARNINGS:")
+        for problem in problems:
+            print(f"  - {problem}")
+    else:
+        print(f"Data check passed: every finished season has {MATCHES_PER_SEASON} matches.")
+    return problems
+
 def build_season_summary(con):
     """
     One row per season: the table that charts.py reads.
@@ -133,10 +168,11 @@ def report_home_advantage(con):
 def main():
     download_all()
     con = duckdb.connect(str(DB_PATH))  # saves your work to a file
+    load_raw(con)
 
     # Question 1
-    load_raw(con)
     build_matches(con)
+    check_season_sizes(con)
     build_season_summary(con)
     report_home_advantage(con)
 
@@ -149,6 +185,8 @@ def main():
     # Question 3
     build_team_tables(con)
     report_shot_performance(con)
+
+    # con.sql("SHOW TABLES").show() # Show the tables in the database
     con.close()
 
 if __name__ == "__main__":

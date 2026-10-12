@@ -1,10 +1,8 @@
-import duckdb
-
 """
-Loads the Bet365 odds columns (B365H, B365D, B365A) into the matches table. It builds three new tables:
-match_probabilities has the margin-free probabilities for each match.
-forecast_scores has the favourite's win rate, the average bookmaker margin, and a Brier score (lower is better) for the odds, compared with a baseline that always predicts the long-run home, draw, and away frequencies.
-calibration groups predictions into 10-point bands and compares predicted with actual frequencies.
+Loads the Bet365 odds columns (B365H, B365D, B365A) into the matches table. It builds three tables:
+- match_probabilities has the margin-free probabilities for each match.
+- forecast_scores has the favourite's win rate, the average bookmaker margin, and a Brier score (lower is better) for the odds, compared with a baseline that always predicts the long-run home, draw, and away frequencies.
+- calibration groups predictions into 10-point bands and compares predicted with actual frequencies.
 """
 
 def build_match_probabilities(con):
@@ -39,6 +37,7 @@ def build_forecast_scores(con):
     """Score the odds as forecasts, and compare against a simple baseline.
 
     Brier score = average squared error of the probabilities (lower is better).
+    
     The baseline always predicts the overall long-run H/D/A frequencies.
     """
     con.sql("""
